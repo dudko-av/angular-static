@@ -1,47 +1,32 @@
-module.exports = function (req, res, next) {
-    //next();
-    var fs = require('fs');
-    var mime = require('../node_modules/mime');
-    var path = require('../node_modules/path');
-    var cache = {};
+module.exports = function () {
+	return function (req, res, next) {
+		"use strict";
 
-    var angularRoot = process.cwd() + '/gurt-app-client';
-    var angularIndex = angularRoot + '/index.dev.html'
-    var filePath = angularRoot + req.url;
+		var fs = require('fs');
+		var mime = require('mime');
+		var path = require('path');
 
-    console.log(filePath);
+		var angularRoot = process.cwd() + '/gurt-app-client';
+		var angularIndex = angularRoot + '/index.' + process.env.NODE_ENV + '.html';
+		var filePath = angularRoot + req.url;
 
+		sendFile(req.url == '/' ? angularIndex : filePath);
 
-    if (req.url == '/') {
-        sendIndex(res);
-    } else {
-        sendFile(res);
-    }
+		function sendFile(filePath) {
+			fs.exists(filePath, function (exists) {
+				filePath = exists ? filePath : angularIndex;
 
-    function sendIndex (res) {
-        fs.readFile(angularIndex, function (err, data) {
-            res.writeHead(
-                200,
-                {"content-type": mime.lookup(path.basename(angularIndex))}
-            );
-            res.end(data);
-        });
-    }
-
-    function sendFile (res) {
-        fs.exists(filePath, function (exists) {
-            if (exists) {
-                fs.readFile(filePath, function (err, data) {
-                    res.writeHead(
-                        200,
-                        {"content-type": mime.lookup(path.basename(filePath))}
-                    );
-                    res.end(data);
-                });
-            } else {
-                sendIndex(res);
-            }
-        });
-    }
-}
-
+				fs.readFile(filePath, function(err, data) {
+					if (err) {
+						console.log(err);
+					} else {
+						res.writeHead(200, {
+							"content-type": mime.lookup(path.basename(filePath))
+						});
+						res.end(data);
+					}
+				});
+			});
+		}
+	};
+};
