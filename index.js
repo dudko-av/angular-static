@@ -8,8 +8,9 @@ module.exports = function () {
 
 		var angularRoot = process.cwd() + '/gurt-app-client';
 		var angularIndex = angularRoot + '/index.' + process.env.NODE_ENV + '.html';
-		var filePath = angularRoot + req.url;
-
+		var filePath = angularRoot + req.path;
+//console.log(angularIndex);
+//console.log(req.path);
 		sendFile(req.url == '/' ? angularIndex : filePath);
 
 		function sendFile(filePath) {
